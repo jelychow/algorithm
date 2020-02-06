@@ -29,7 +29,7 @@ class MinStack {
      * 21
      */
     public void pop() {
-       if(normalStack.pop()==minStack.peek()){
+       if(normalStack.pop().intValue()==minStack.peek().intValue()){
            minStack.pop();
        }
     }
