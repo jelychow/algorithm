@@ -1,3 +1,4 @@
+import java.util.ArrayDeque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.locks.Condition;
@@ -61,6 +62,68 @@ class BoundedBlockingQueue {
            return queue.size();
         }finally {
             lock.unlock();
+        }
+    }
+
+    class Producer implements Runnable{
+        private BoundedBlockingQueue queue;
+
+        public Producer(BoundedBlockingQueue queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        public void run() {
+            try {
+                this.queue.enqueue((int) Math.random());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class Consumer implements Runnable{
+        private BoundedBlockingQueue queue;
+
+        @Override
+        public void run() {
+            try {
+                this.queue.dequeue();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    // 用 wait notifyAll 实现 阻塞队列  生产消费模型  生产这 消费者 用两个 runnable 进行模拟
+    class WaitBlockingQueue {
+        int size ;
+        Queue<Integer> queue;
+        public WaitBlockingQueue(int capacity) {
+            queue = new LinkedList<>();
+            size = capacity;
+        }
+
+        public synchronized void  enqueue(int element) throws InterruptedException {
+            while (queue.size()==size){
+                wait();
+            }
+            queue.offer(element);
+            notifyAll();
+        }
+
+        public synchronized int dequeue() throws InterruptedException {
+            while (queue.isEmpty()){
+                wait();
+            }
+            int res = queue.poll();
+            notifyAll();
+            return res;
+        }
+
+        public synchronized int size() {
+            return queue.size();
         }
     }
 }
