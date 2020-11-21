@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
@@ -13,6 +14,9 @@ public class CourseSchedule {
 
     public boolean canFinish(int numCourses, int[][] prerequisites) {
         int [] degrees = new int[numCourses];
+        LinkedList<Integer> res = new LinkedList();
+
+
         LinkedList<Integer> deque = new LinkedList();
         for (int i = 0; i < prerequisites.length; i++) {
             degrees[prerequisites[i][0]]++;
@@ -24,7 +28,9 @@ public class CourseSchedule {
             }
         }
         while (!deque.isEmpty()) {
-            Integer course = deque.removeFirst();
+            int course = deque.removeFirst();
+            res.add(course);
+
             numCourses--;
             for (int i = 0; i < prerequisites.length; i++) {
                 if (prerequisites[i][1]!=course)
@@ -34,6 +40,11 @@ public class CourseSchedule {
                 }
             }
         }
+
+
+        System.out.println(res);
+
+
         return numCourses==0;
     }
 }

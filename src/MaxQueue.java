@@ -17,7 +17,7 @@ class MaxQueue {
 
     public void push_back(int value) {
         queue[normalTail++] = value;
-
+        // 注意此时语义变化，tail 一直指向最后一个空元素 所以比较的是 tail-1；
         while (tail != head && maxQueue[tail - 1] < value) {
             tail--;
         }

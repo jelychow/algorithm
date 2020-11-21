@@ -1,6 +1,8 @@
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 class FooBar {
     private int n;
@@ -18,7 +20,7 @@ class FooBar {
 
             // printFoo.run() outputs "foo". Do not change or remove this line.
             try {
-                while (state!=0);
+                while (state != 0) ;
                 printFoo.run();
                 state = 1;
                 cyclicBarrier.await();
@@ -52,28 +54,47 @@ class FooBar {
 class FooBar2 {
     private int n;
 
-    Semaphore semaphore = new Semaphore(1);
     public FooBar2(int n) {
         this.n = n;
     }
 
-    public void foo(Runnable printFoo) throws InterruptedException {
+    ReentrantLock lock = new ReentrantLock();
+    Condition condition = lock.newCondition();
+    volatile boolean isFinish = true;
 
+    public void foo(Runnable printFoo) throws InterruptedException {
+        lock.lock();
         for (int i = 0; i < n; i++) {
-            semaphore.acquire();
-            // printFoo.run() outputs "foo". Do not change or remove this line.
-            printFoo.run();
+
+            try {
+                while (!isFinish) {
+                    condition.await();
+                }
+                printFoo.run();
+                isFinish = false;
+                condition.signal();
+            } finally {
+
+            }
         }
+        lock.unlock();
     }
 
     public void bar(Runnable printBar) throws InterruptedException {
-
+        lock.lock();
         for (int i = 0; i < n; i++) {
 
-            // printBar.run() outputs "bar". Do not change or remove this line.
-            while(semaphore.availablePermits()!=0);
-            printBar.run();
-            semaphore.release();
+            try {
+                while (isFinish) {
+                    condition.await();
+                }
+                printBar.run();
+                isFinish = true;
+                condition.signal();
+            } finally {
+
+            }
         }
+        lock.unlock();
     }
 }

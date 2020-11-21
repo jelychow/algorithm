@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -54,6 +55,7 @@ class SpiralMatrix {
 
                     if ((j + 1 < matrix[0].length && visited[i][j + 1]) || j == matrix[0].length - 1) {
                         count++;
+                        new LinkedList<>().pop();
                         i++;
                         break;
                     } else {
