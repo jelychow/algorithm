@@ -1,4 +1,5 @@
 import com.sun.deploy.util.ArrayUtil;
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import com.sun.tools.javac.util.ArrayUtils;
 import com.sun.tools.javac.util.Pair;
 import org.omg.CORBA.MARSHAL;
@@ -84,6 +85,10 @@ class Solution {
 
     public static void main(String[] args) {
         int[] nums = new int[]{1, 4, 2, 3, 67, 2332, 767, 332, 11, 322, 43};
+        int[] nums1 = new int[]{1, 3, 5, 6, 8};
+
+        int index = Arrays.binarySearch(nums1, 9);
+        System.out.println(index);
 //        new Solution().insertSort(nums);
 //        solve(4, new int[]{1, 2, 3});
 //
@@ -3333,21 +3338,72 @@ class Solution {
     }
 
     public ListNode sortList(ListNode head) {
+        if (head == null) {
+            return head;
+        }
 
-        return sortList(head,null);
+        int size = 1;
+        int count = 0;
+        ListNode p = head;
+        ListNode dummy = new ListNode(-1);
+        dummy.next = head;
+        while (p != null) {
+            count++;
+            p = p.next;
+        }
+        while (size < count) {
+            ListNode cur = dummy.next;
+            ListNode pre = dummy;
+            while (cur != null) {
+
+                ListNode left = cur;
+                ListNode right = cut(left, size);
+                cur = cut(right, size);
+                ListNode node = merge(left, right);
+                pre.next = node;
+                while (node.next != null) {
+                    node = node.next;
+                }
+                pre = node;
+            }
+
+
+            size <<= 1;
+        }
+
+        return dummy.next;
     }
+
+    private ListNode cut(ListNode cur, int size) {
+
+        if (cur == null) {
+            return cur;
+        }
+
+        while (cur != null && --size > 0) {
+            cur = cur.next;
+        }
+        if (cur == null) {
+            return null;
+        }
+
+        ListNode p = cur.next;
+        cur.next = null;
+        return p;
+    }
+
 
     public ListNode sortList(ListNode head, ListNode tail) {
 
-        if(head==null){
+        if (head == null) {
             return head;
         }
-        if (head.next==null){
+        if (head.next == null) {
             return head;
         }
-        ListNode fast = head,slow = head;
+        ListNode fast = head, slow = head;
 
-        while (fast!=tail){
+        while (fast != tail) {
             fast = fast.next;
             slow = slow.next;
             if (fast != tail) {
@@ -3356,9 +3412,9 @@ class Solution {
         }
         ListNode mid = slow;
 
-        ListNode left = sortList(head,mid);
-        ListNode right = sortList(mid,tail);
-        ListNode node = merge(left,right);
+        ListNode left = sortList(head, mid);
+        ListNode right = sortList(mid, tail);
+        ListNode node = merge(left, right);
         return node;
     }
 
@@ -3378,5 +3434,504 @@ class Solution {
             l2.next = merge(l2.next, l1);
             return l2;
         }
+    }
+
+    public boolean isAnagram(String s, String t) {
+        char[] a = s.toCharArray();
+        char[] b = t.toCharArray();
+        Arrays.sort(a);
+        Arrays.sort(b);
+        return Arrays.equals(a, b);
+    }
+
+    public int findMinArrowShots(int[][] points) {
+        Arrays.sort(points, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] a, int[] b) {
+                if (a[0] < b[0]) {
+                    return -1;
+                } else if (a[0] > b[0]) {
+                    return 1;
+                }
+                return a[1] - b[1];
+            }
+        });
+
+//        Stack<int[]>stack = new Stack<>();
+        int[] pre = null;
+        int count = 0;
+        for (int i = 0; i < points.length; i++) {
+            if (pre != null && pre[1] >= points[i][0]) {
+                if (points[i][1] < pre[1]) {
+                    pre = points[i];
+                } else {
+                    pre[0] = points[i][0];
+                }
+
+            } else {
+                pre = points[i];
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int countNodes(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return countNodes(root.right) + countNodes(root.left) + 1;
+
+    }
+
+    public int countNodes1(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        int left = countLevel(root.left);
+        int right = countLevel(root.right);
+
+        if (left == right) {
+            return (1 << left) + countNodes(root.right);
+        } else {
+            return (1 << right) + countNodes(root.left);
+        }
+    }
+
+    public int countLevel(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int level = 0;
+        while (root != null) {
+            root = root.left;
+            level++;
+        }
+        return level;
+    }
+
+    public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] a, int[] b) {
+                if (a[0] > b[0]) {
+                    return 1;
+                } else if (a[0] < b[0]) {
+                    return -1;
+                }
+                return a[1] - b[1];
+            }
+        });
+        int pre[] = null;
+        int count = 0;
+
+        for (int i = 0; i < intervals.length; i++) {
+            int item[] = intervals[i];
+            if (pre != null && pre[1] >= item[0]) {
+
+                if (item[0] > pre[0] && item[0] < pre[1]) {
+                    if (item[1] > pre[1]) {
+                        count++;
+                    } else {
+                        pre = item;
+                    }
+
+                } else {
+                    pre[1] = item[1];
+                }
+
+            } else {
+                pre = intervals[i];
+
+            }
+        }
+        return count;
+    }
+
+    public int[] relativeSortArray(int[] arr1, int[] arr2) {
+
+        HashMap<Integer, Integer> map = new HashMap<>();
+        HashSet<Integer> set = new HashSet<>();
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < arr2.length; i++) {
+            set.add(arr2[i]);
+        }
+        for (int i = 0; i < arr1.length; i++) {
+            int count = map.getOrDefault(arr1[i], 0);
+            map.put(arr1[i], count + 1);
+            if (!set.contains(arr1[i])) {
+                list.add(arr1[i]);
+            }
+        }
+
+
+        int[] res = new int[arr1.length];
+        int index = 0;
+        for (int i = 0; i < arr2.length; i++) {
+            int item = arr2[i];
+            int count = map.getOrDefault(item, 0);
+            for (int j = 0; j < count; j++) {
+                res[index++] = item;
+            }
+        }
+        Collections.sort(list);
+        for (int i = 0; i < list.size(); i++) {
+            res[index++] = list.get(i);
+        }
+        return res;
+    }
+
+    public String sortString(String s) {
+
+        int[] words = new int[26];
+        char[] chars = s.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            words[chars[i] - 'a']++;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int len = s.length();
+        int index = 0;
+        int state = 0;
+        while (stringBuilder.length() < len) {
+            if (index == 26) {
+                state = 1;
+                index = 25;
+            } else if (index == -1) {
+                index = 0;
+                state = 1;
+            }
+
+            if (state == 0 && index < 26) {
+                if (words[index] > 0) {
+                    stringBuilder.append(new Character((char) ('a' + index)));
+                    words[index]--;
+                }
+                index++;
+                System.out.println("index:" + index);
+
+            }
+
+            if (state == 1 && index >= 0) {
+                if (words[index] > 0) {
+                    stringBuilder.append(new Character((char) ('a' + index)));
+                    words[index]--;
+                }
+                index--;
+                System.out.println("index:" + index);
+            }
+            System.out.println(stringBuilder.toString());
+        }
+
+        return stringBuilder.toString();
+    }
+
+    public int maximumGap(int[] nums) {
+
+        int[] arr = new int[Integer.MAX_VALUE];
+        for (int i = 0; i < nums.length; i++) {
+            arr[nums[i]] = nums[i];
+        }
+
+        int gap = 0;
+        int last = 0;
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != 0) {
+                if (arr[i] - last > gap) {
+                    gap = arr[i] - last;
+                }
+                last = arr[i];
+            }
+        }
+        return gap;
+    }
+
+    public int fourSumCount(int[] A, int[] B, int[] C, int[] D) {
+
+        HashMap<Integer, Integer> map = new HashMap<>();
+
+        for (int i = 0; i < A.length; i++) {
+            for (int j = 0; j < B.length; j++) {
+                map.put(A[i] + B[j], map.getOrDefault(A[i] + B[j], 0) + 1);
+            }
+        }
+        int count = 0;
+        for (int i = 0; i < C.length; i++) {
+            for (int j = 0; j < D.length; j++) {
+                // 有与之对应的 组合
+                if (map.containsKey(-(C[i] + D[j]))) {
+                    count += map.get(-(C[i] + D[j]));
+                }
+            }
+        }
+        return count;
+    }
+
+    public int reversePairs(int[] nums) {
+
+        return mergeSort(nums, 0, nums.length - 1);
+    }
+
+    public int mergeSort(int nums[], int left, int right) {
+
+        if (left >= right) {
+            return 0;
+        }
+        int mid = (left + right) >> 1;
+
+        int count = mergeSort(nums, left, mid) + mergeSort(nums, mid + 1, right);
+        int i = left;
+        int j = mid + 1;
+        while (i <= mid && j <= right) {
+            if (nums[i] * 0.5 > nums[j]) {
+                count += mid - i + 1;
+                j++;
+            } else {
+                i++;
+            }
+        }
+        Arrays.sort(nums, left, right + 1);
+        return count;
+    }
+
+    public void sort(int[] nums, int l1, int r1, int l2, int r2) {
+        int start = l1;
+        int[] temp = new int[r2 - l1 + 1];
+        int index = 0;
+        while (l1 <= r1 && l2 <= r2) {
+
+            if (nums[l1] < nums[l2]) {
+                temp[index] = nums[l1];
+                l1++;
+            } else {
+                temp[index] = nums[l2];
+                l2++;
+            }
+            index++;
+        }
+        if (l1 <= r1) {
+            for (int i = l1; i <= r1; i++) {
+                temp[index++] = nums[i];
+            }
+        }
+
+        if (l2 <= r2) {
+            for (int i = l2; i <= r2; i++) {
+                temp[index++] = nums[i];
+            }
+        }
+
+        System.arraycopy(temp, 0, nums, start, temp.length);
+
+    }
+
+    public int largestPerimeter(int[] A) {
+        Arrays.sort(A);
+
+        for (int i = A.length - 1; i >= 2; i--) {
+            if (A[i - 1] + A[i - 2] - A[i] > 0) {
+                // 如果 A[i] 与最近的两个大数都不能组成三角形 那么该数字不适合作为边存在
+                return A[i - 1] + A[i - 2] + A[i];
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 先翻转第一列的元素，然后每一列翻转
+     *
+     * @param A
+     * @return
+     */
+    public int matrixScore(int[][] A) {
+        if (A.length == 0) {
+            return 0;
+        }
+
+        int width = A[0].length;
+        int height = A.length;
+        int count[] = new int[width];
+
+        for (int i = 0; i < height; i++) {
+
+            if (A[i][0] == 0) {
+                for (int j = 0; j < A[i].length; j++) {
+                    if (A[i][j] == 0) {
+                        A[i][j] = 1;
+                    } else {
+                        A[i][j] = 0;
+                    }
+                }
+            }
+
+        }
+        count[0] = height;
+
+        for (int i = 1; i < width; i++) {
+            int size = 0;
+            for (int j = 0; j < height; j++) {
+                if (A[j][i] == 1) {
+                    size++;
+                }
+            }
+            if (size * 2 < height) {
+                size = height - size;
+            }
+            count[i] = size;
+        }
+
+        int res = 0;
+        for (int i = 0; i < count.length; i++) {
+            res = (1 << (count.length - i - 1)) * count[i] | res;
+        }
+        return res;
+    }
+
+    public String removeDuplicateLetters(String s) {
+
+        boolean[] contains = new boolean[26];
+        int[] count = new int[26];
+        for (int i = 0; i < s.length(); i++) {
+            count[s.charAt(i) - 'a']++;
+        }
+
+        Stack<Character> stack = new Stack<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            count[c - 'a']--;
+            if (contains[c - 'a']) {
+                continue;
+            }
+
+            // 如果栈顶元素 大于 当前元素 并且 后面还有该元素 那么此元素弹出
+            while (!stack.isEmpty() && stack.peek() > c) {
+                if (count[stack.peek() - 'a'] == 0) {
+                    break;
+                }
+
+                char top = stack.pop();
+                count[top - 'a']--;
+                contains[top - 'a'] = false;
+            }
+
+            stack.push(c);
+            contains[c - 'a'] = true;
+
+        }
+
+        StringBuilder builder = new StringBuilder();
+        while (!stack.isEmpty()) {
+            builder.append(stack.pop());
+        }
+        return builder.reverse().toString();
+    }
+
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> lists = new ArrayList();
+
+        if (root == null) {
+            return lists;
+        }
+        Queue<TreeNode> queue = new LinkedList();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            LinkedList<Integer> list = new LinkedList();
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (lists.size() % 2 == 1) {
+                    list.offerFirst(node.val);
+                } else {
+                    list.offerLast(node.val);
+                }
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+            lists.add(list);
+        }
+        return lists;
+    }
+
+    //arr1 = [1,5,3,6,7], arr2 = [1,3,2,4]
+    public int makeArrayIncreasing(int[] arr1, int[] arr2) {
+        Arrays.sort(arr2);
+        int last = 0;
+        int count = 0;
+        for (int i = 0; i < arr1.length; i++) {
+            if (i > 0 && arr1[i] > arr1[i - 1]) {
+                int index = Arrays.binarySearch(arr2, last, arr2.length, arr1[i]);
+                if (index == -1) {
+                    return -1;
+                } else {
+                    if (index >= 0) {
+                        last = index;
+                    } else {
+                        last = -index - 1;
+                    }
+                    arr1[i] = arr2[last];
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    // 已知面积 s = 宽(W)*高(H)
+
+    public int maximalRectangle(char[][] matrix) {
+        int m = matrix.length;
+        if (m == 0) {
+            return 0;
+        }
+        int n = matrix[0].length;
+        int[][] left = new int[m][n];
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] == '1') {
+                    left[i][j] = (j == 0 ? 0 : left[i][j - 1]) + 1;
+                }
+            }
+        }
+
+        int temp[] = new int[matrix.length + 2];
+        int ret = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                temp[j + 1] = left[i][j];
+            }
+            ret = Math.max(ret, largestRectangleArea(temp));
+        }
+
+        return ret;
+    }
+
+
+    public boolean isIsomorphic(String s, String t) {
+        Map<Character, Character> map = new HashMap();
+        for (int i = 0; i < t.length(); i++) {
+            char c = t.charAt(i);
+            char o = s.charAt(i);
+            if (map.containsKey(o)) {
+                if (map.get(o) != c) {
+                    return false;
+                }
+            } else {
+                if (map.containsValue(c)) {
+                    return false;
+                }
+                map.put(o, c);
+            }
+        }
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class KMP {
     String pat;
@@ -102,6 +103,11 @@ public class KMP {
     int lcm(int a,int b){
         return a*b/GCD(a,b);
     }
+
+
+
+
+
 
 
 

@@ -19,6 +19,10 @@ public class Main {
         // 000022898222000 把0 移动到前面 保证非0 元素相对位置不变
         int[]nums = new int[]{0,0,122,3,0,2,34,0};
         moveZero(nums);
+
+        int []res1 = new int[]{1};
+        int index = new Main().findRight(res1,1);
+        System.out.println(index);
     }
     
     public static void moveZero(int[]nums){
@@ -77,6 +81,58 @@ public class Main {
         return pre;
         
     }
+
+    int total = 0;
+    int col[] ;
+    public int totalNQueens(int n) {
+        col = new int[n];
+        dfs(0);
+        return total;
+    }
+
+    public void dfs(int r){
+        if (r==col.length){
+            total++;
+            return;
+        }
+        for(int i = 0;i<col.length;i++){
+
+            if (check(r, i)){
+                col[r] = i;
+                dfs(r+1);
+                col[r] = 0;
+            }
+        }
+    }
+
+    public boolean check(int r,int c){
+
+        for (int i = 0; i < r; i++) {
+            if (col[r]==col[i]||Math.abs(r-i)==Math.abs(c-col[i])){
+                return false;
+            }
+        }
+        return true;
+
+    }
+
+    public int findRight(int nums[],int target){
+        int l = 0;
+        int r = nums.length-1;
+        while (l<=r){
+            int mid = (l+r)>>1;
+            if (nums[mid]==target){
+                l=mid+1;
+            }else if (nums[mid]<target){
+                l=mid+1;
+            }else {
+                r=mid-1;
+            }
+        }
+
+        return nums[l-1]==target?l-1:-1;
+    }
+
 
 
 }
