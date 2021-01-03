@@ -3934,4 +3934,255 @@ class Solution {
         }
         return true;
     }
+
+    /**
+     * 用单调栈来存储每个矩形高度，
+     * 因为如果有低的高度进来
+     * 就可以确定了栈内区间的高度
+     * 就无法维持原有的区间了
+     * 这时候就需要将原有高度出栈计算
+     * 两边个放一个0
+     *
+     * @param heights
+     * @return
+     */
+    public int largestRectangleArea1(int[] heights) {
+
+        Deque<Integer> deque = new ArrayDeque<>();
+        int area = 0;
+        int temp[] = new int[heights.length + 2];
+        System.arraycopy(heights, 0, temp, 1, heights.length);
+        for (int i = 0; i < temp.length; i++) {
+            while (!deque.isEmpty() && temp[deque.peekLast()] > temp[i]) {
+                int index = deque.pollLast();
+                // 此处注意应该选取 上一处的index
+                // len = i - preIndex
+                area = Math.max(area, temp[index] * (i - 1 - deque.peekLast()));
+            }
+            deque.offerLast(i);
+        }
+        return area;
+    }
+
+    public ListNode reverseList(ListNode head) {
+
+        // 找到第一个不为空的节点
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode node = reverseList(head.next);
+        // 当前节点的尾节点是 head.next 翻转了 在最后
+        head.next.next = head;
+        head.next = null;
+        return node;
+    }
+
+
+    public int maxProfit(int k, int[] prices) {
+        if (k < 1 || prices.length < 2) {
+            return 0;
+        }
+        if (k >= prices.length >>> 1) {
+            return greedy(prices);
+        }
+
+        // 从 0 开始 包含最后一次的计算
+        int dp[][] = new int[k + 1][2];
+        for (int i = 0; i <= prices.length; i++) {
+            for (int j = 0; j <= k; j++) {
+                dp[j][1] = Integer.MIN_VALUE;
+            }
+        }
+
+        dp[0][1] = -prices[0];
+
+        for (int i = 1; i <= prices.length; i++) {
+            for (int j = 1; j <= k; j++) {
+                dp[j][1] = Math.max(dp[j][1], dp[j - 1][0] - prices[i - 1]);
+                dp[j][0] = Math.max(dp[j][1] + prices[i - 1], dp[j][0]);
+            }
+
+        }
+        return dp[k][0];
+    }
+
+    private int greedy(int[] prices) {
+        int res = 0;
+        for (int i = 1; i < prices.length; i++) {
+            if (prices[i] > prices[i - 1]) {
+                res += prices[i] - prices[i - 1];
+            }
+        }
+        return res;
+    }
+
+    public int lastStoneWeight(int[] stones) {
+
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2 - o1;
+            }
+        });
+        for (int i = 0; i < stones.length; i++) {
+            priorityQueue.offer(stones[i]);
+        }
+        while (priorityQueue.size() > 1) {
+            int res = priorityQueue.poll() - priorityQueue.poll();
+            if (res > 0) {
+                priorityQueue.offer(res);
+            }
+        }
+
+        return priorityQueue.isEmpty() ? 0 : priorityQueue.peek();
+    }
+
+    public boolean canPlaceFlowers(int[] flowerbed, int n) {
+        int count = 0;
+        for (int i = 0; i < flowerbed.length; i += 2) {
+            if (flowerbed[i] == 0) {
+                if (i == flowerbed.length - 1 || flowerbed[i + 1] == 0) {
+                    count++;
+                    if (count >= n) {
+                        return true;
+                    }
+                } else {
+                    i++;
+                }
+            }
+        }
+        PriorityQueue queue;
+        return count >= n;
+    }
+
+    public int maxProfit(int[] prices) {
+        if (prices.length < 2) {
+            return 0;
+        }
+        int dp[][] = new int[prices.length][3];
+        dp[0][0] = -prices[0];
+
+        //
+        for (int i = 1; i < prices.length; i++) {
+            dp[i][0] = Math.max(dp[i - 1][1] - prices[i], dp[i - 1][2] - prices[i]);
+            dp[i][1] = dp[i - 1][0] + prices[i];
+            dp[i][2] = Math.max(dp[i - 1][0] + prices[i], dp[i - 1][1]);
+
+        }
+        return Math.max(dp[prices.length - 1][1], dp[prices.length - 1][2]);
+    }
+
+    public int stoneGameVII(int[] stones) {
+
+        int n = stones.length;
+        // 定义 i->j 之间的 sum
+        int sum[][] = new int[n][n];
+        // 定义 i->j 之间的 差
+        int dp[][] = new int[n][n];
+
+        // 递推公式  dp[i][j] = sum[i+1][j]+dp[i+1][j]
+        for (int i = 0; i < n; i++) {
+            sum[i][i] = stones[i];
+            for (int j = i + 1; j < n; j++) {
+                sum[i][j] = sum[i][j - 1] + stones[j];
+            }
+        }
+
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = i + 1; j < n; j++) {
+                if (j - i == 1) {
+                    dp[i][j] = Math.max(stones[i], stones[j]);
+                } else {
+                    // 移除左侧 与右侧 当次差值的比较
+                    dp[i][j] = Math.max(sum[i + 1][j] - dp[i + 1][j], sum[i][j - 1] - dp[i][j - 1]);
+                }
+            }
+        }
+
+        return dp[0][n - 1];
+    }
+
+    public int maximumUnits(int[][] boxTypes, int truckSize) {
+
+        if (boxTypes.length == 0 || truckSize < 0) {
+            return 0;
+        }
+        Arrays.sort(boxTypes, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] a, int[] b) {
+                return b[1] - a[1];
+            }
+        });
+
+        int sum = 0;
+        int size = 0;
+        for (int i = 0; i < boxTypes.length; i++) {
+            int[] item = boxTypes[i];
+            for (int j = 0; j < item[0]; j++) {
+                size++;
+                sum += item[1];
+                if (size == truckSize) {
+                    return sum;
+                }
+            }
+        }
+        return sum;
+    }
+
+    public int countPairs(int[] deliciousness) {
+        int count = 0;
+        HashMap<Integer, Integer> map = new HashMap<>();
+        int sum[] = new int[22];
+        for (int i = 0; i < 22; i++) {
+            sum[i] = 1 << i;
+        }
+        for (int num : deliciousness) {
+            for (int j = 0; j < 22; j++) {
+
+                int target = sum[j] - num;
+                if (target < 0) {
+                    continue;
+                }
+                if (map.containsKey(target)) {
+                    count += map.get(target);
+                }
+                count %= (Math.pow(10, 9) + 7);
+            }
+            map.put(num, map.getOrDefault(num, 0) + 1);
+        }
+        return count;
+    }
+
+    public int countPairs2(int[] deliciousness) {
+        long count = 0;
+        HashMap<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < deliciousness.length; i++) {
+            map.put(deliciousness[i], map.getOrDefault(deliciousness[i], 0) + 1);
+        }
+        int sum[] = new int[22];
+        for (int i = 0; i < 22; i++) {
+            sum[i] = 1 << i;
+        }
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            int key = entry.getKey();
+            for (int i = 0; i < 22; i++) {
+                int target = sum[i] - key;
+                if (target < 0) {
+                    continue;
+                }
+                if (map.containsKey(target)) {
+                    if (target == key) {
+                        count += 1L * entry.getValue() * (entry.getValue() - 1);
+                    } else {
+                        count += 1L * map.get(target) * entry.getValue();
+                    }
+                }
+            }
+        }
+        count /= 2;
+        count %= (Math.pow(10, 9) + 7);
+        return (int) count;
+    }
+
+
 }
